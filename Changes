@@ -1,6 +1,8 @@
 
-2010-09-21    v0.001
+2010-09-21    v0.002
+  - Woops!  Was not returning a coderef.  Now we are.
 
+2010-09-21    v0.001
   - Initial version.
   - Tested with Plack, Corona and Starman.
 

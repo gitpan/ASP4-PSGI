@@ -7,71 +7,73 @@ use ASP4::API;
 use ASP4::SimpleCGI;
 use Plack::Request;
 
-our $VERSION = '0.001';
+our $VERSION = '0.002';
 
 
 sub app
 {
-  my $env = shift;
-  my $preq = Plack::Request->new( $env );
+  return sub {
+    my $env = shift;
+    my $preq = Plack::Request->new( $env );
 
-  local %ENV = %$env;
-  my $api = ASP4::API->new();
-  
-  # Parse cookies:
-  foreach my $cookie ( split /;\s*/, ($ENV{HTTP_COOKIE}||'') )
-  {
-    my ($k,$v) = map { ASP4::SimpleCGI->unescape($_) } split /\=/, $cookie;
-    $api->ua->add_cookie( $k => $v );
-  }# end foreach()
-  
-  # Execute the request:
-  my $method = lc( $ENV{REQUEST_METHOD} );
-  my $res = do {
-    # Is it a GET, POST or Upload?
-    if( $method eq 'get' )
+    local %ENV = %$env;
+    my $api = ASP4::API->new();
+    
+    # Parse cookies:
+    foreach my $cookie ( split /;\s*/, ($ENV{HTTP_COOKIE}||'') )
     {
-      # GET
-      $api->ua->get( $env->{REQUEST_URI} );
-    }
-    else
-    {
-      if( $ENV{CONTENT_TYPE} =~ m{^multipart/form\-data;} )
+      my ($k,$v) = map { ASP4::SimpleCGI->unescape($_) } split /\=/, $cookie;
+      $api->ua->add_cookie( $k => $v );
+    }# end foreach()
+    
+    # Execute the request:
+    my $method = lc( $ENV{REQUEST_METHOD} );
+    my $res = do {
+      # Is it a GET, POST or Upload?
+      if( $method eq 'get' )
       {
-        # Upload:
-        my @pairs = $preq->parameters->flatten;
-        # Prepare the upload:
-        foreach my $up ( keys %{ $preq->uploads } )
-        {
-          my $upload = $preq->uploads->{$up};
-          push @pairs, $up => [
-            $upload->{tempname}, $upload->{filename},
-            'content-type' => $upload->{'content-type'}
-          ];
-        }# end foreach()
-        
-        # Now we can upload:
-        $api->ua->upload( $env->{REQUEST_URI}, \@pairs );
+        # GET
+        $api->ua->get( $env->{REQUEST_URI} );
       }
       else
       {
-        # POST:
-        $api->ua->post( $env->{REQUEST_URI}, [ $preq->parameters->flatten ] );
+        if( $ENV{CONTENT_TYPE} =~ m{^multipart/form\-data;} )
+        {
+          # Upload:
+          my @pairs = $preq->parameters->flatten;
+          # Prepare the upload:
+          foreach my $up ( keys %{ $preq->uploads } )
+          {
+            my $upload = $preq->uploads->{$up};
+            push @pairs, $up => [
+              $upload->{tempname}, $upload->{filename},
+              'content-type' => $upload->{'content-type'}
+            ];
+          }# end foreach()
+          
+          # Now we can upload:
+          $api->ua->upload( $env->{REQUEST_URI}, \@pairs );
+        }
+        else
+        {
+          # POST:
+          $api->ua->post( $env->{REQUEST_URI}, [ $preq->parameters->flatten ] );
+        }# end if()
       }# end if()
-    }# end if()
+    };
+    
+    # Return a PSGI-compliant response:
+    my ($status) = $res->status_line =~ m{^(\d+)};
+    return [
+      $status,
+      [
+        %{ $res->headers }
+      ],
+      [
+        $res->content
+      ]
+    ];
   };
-  
-  # Return a PSGI-compliant response:
-  my ($status) = $res->status_line =~ m{^(\d+)};
-  return [
-    $status,
-    [
-      %{ $res->headers }
-    ],
-    [
-      $res->content
-    ]
-  ];
 }# end app()
 
 1;# return true:
