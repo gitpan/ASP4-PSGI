@@ -1,4 +1,7 @@
 
+2011-12-12    v0.003
+  - Now compatible with more recent versions of ASP4.
+
 2010-09-21    v0.002
   - Woops!  Was not returning a coderef.  Now we are.
 

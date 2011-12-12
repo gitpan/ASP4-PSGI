@@ -10,7 +10,7 @@ all_from 'lib/ASP4/PSGI.pm';
 
 test_requires 'Test::More'  => '0';
 
-requires 'ASP4'   => '1.036';
+requires 'ASP4'   => '1.069';
 requires 'PSGI'   => '1.03';
 requires 'Plack'  => '0.9949';
 

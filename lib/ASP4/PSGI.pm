@@ -3,11 +3,10 @@ package ASP4::PSGI;
 
 use strict;
 use warnings 'all';
-use ASP4::API;
 use ASP4::SimpleCGI;
 use Plack::Request;
 
-our $VERSION = '0.002';
+our $VERSION = '0.003';
 
 
 sub app
@@ -17,6 +16,7 @@ sub app
     my $preq = Plack::Request->new( $env );
 
     local %ENV = %$env;
+    require ASP4::API;
     my $api = ASP4::API->new();
     
     # Parse cookies:
