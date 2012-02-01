@@ -6,7 +6,7 @@ use warnings 'all';
 use ASP4::SimpleCGI;
 use Plack::Request;
 
-our $VERSION = '0.003';
+our $VERSION = '0.004';
 
 
 sub app
@@ -62,8 +62,15 @@ sub app
       }# end if()
     };
     
-    # Return a PSGI-compliant response:
+    # Check for a 404 response.  If we got one, then see if we've got a /404.asp:
     my ($status) = $res->status_line =~ m{^(\d+)};
+    if( $status eq 404 && -f $api->config->web->www_root . '/404.asp' )
+    {
+      # Try to do the right thing:
+      $res = $api->ua->get( '/404.asp' );
+    }# end if()
+    
+    # Return a PSGI-compliant response:
     return [
       $status,
       [

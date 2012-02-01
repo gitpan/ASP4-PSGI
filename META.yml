@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               ASP4-PSGI
-version:            0.003
+version:            0.004
 abstract:           Run your ASP4 web application under PSGI/Plack.
 author:
     - John Drago <jdrago_999@yahoo.com>
@@ -9,7 +9,7 @@ distribution_type:  module
 test_requires:
     Test::More:           0
 requires:
-    ASP4:                 1.069
+    ASP4:                 1.077
     PSGI:                 1.03
     Plack:                0.9949
 no_index:
